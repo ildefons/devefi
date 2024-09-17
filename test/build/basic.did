@@ -1,0 +1,5 @@
+type _anon_class_2_1 = 
+ service {
+   test: () -> (nat);
+ };
+service : (record {ledgerId: principal;}) -> _anon_class_2_1
