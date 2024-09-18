@@ -34,7 +34,7 @@ actor class({ledgerId: Principal}) = this {
     var next_subaccount_id:Nat64 = 100000;
 
     stable let lmem = Licrc.LMem();
-    let ledger = Licrc.Ledger(lmem, Principal.toText(ledgerId), #last);
+    let ledger = Licrc.Ledger<system>(lmem, Principal.toText(ledgerId), #last);
     
     ledger.onMint(func (t) {
        // if sent mint transaction to this canister
