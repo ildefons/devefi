@@ -40,8 +40,6 @@ actor class({ledgerId: Principal}) = self {
     // dvf.add_ledger<system>(supportedLedgers[2], #icrc);
     // dvf.add_ledger<system>(supportedLedgers[3], #icrc);
 
-    //<--------------IMHERE
-
     stable let node_mem = Node.Mem<Tex.Mem>();
     let nodes = Node.Node<system, Tex.CreateRequest, Tex.Mem, Tex.Shared, Tex.ModifyRequest>({
         mem = node_mem;
