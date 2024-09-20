@@ -192,6 +192,8 @@ module {
 
                 let #ic(source_ep) = endpoint else Debug.trap("Not supported");
 
+                Debug.print("Data of send:"#debug_show(to));
+
                 ignore dvf.send({
                     ledger = source_ep.ledger;
                     to;

@@ -175,8 +175,7 @@ describe('Basic', () => {
     it(`configure node`, async () => {
    
       //1) start canister thatcontain the node object
-      node.start();
-      await passTime(2);
+
 
 
       let gna_args: NodeId = 0;
@@ -222,6 +221,7 @@ describe('Basic', () => {
     //   'ic' : ICEndpoint,
     //   'remote' : RemoteEndpoint,
     // });
+
       let ac_jo: Account = {'owner': jo.getPrincipal(), subaccount:[]};
       let icep_jo : ICEndpoint = {
           'name' : 'jo',
@@ -245,6 +245,35 @@ describe('Basic', () => {
         'destinations' : [dest1],
         'refund' : [ep_jo]
       };
+
+      // let req : NodeRequest = {
+      //   'controllers' : [jo.getPrincipal()],
+      //   'destinations' : [{'ic' : {        
+      //     'name' : 'bob',
+      //     'ledger' : ledgerCanisterId,
+      //     'account' : [{'owner': bob.getPrincipal(), subaccount:[]}],        
+      //     }
+      //   }],
+      //   'refund' : [{'ic' : {
+      //     'name' : 'jo',
+      //     'ledger' :  ledgerCanisterId,
+      //     'account' : {'owner': jo.getPrincipal(), subaccount:[]}
+      //     }
+      //   }],
+      // };
+
+      // let creq : CreateRequest = {
+      //   'throttle' : {
+      //     'init' : {'ledger' : ledgerCanisterId},
+      //     'variables' : {
+      //         'interval_sec' : {'fixed' : 2n}, 
+      //         'max_amount' : {'fixed' : 100n}
+      //       },
+      //   },
+      // };
+
+      // await node.icrc55_create_node(req, creq);
+
     //   public type CreateRequest = {
     //     #throttle : ThrottleVector.CreateRequest;
     //     #lend: Lend.CreateRequest;
@@ -287,6 +316,16 @@ describe('Basic', () => {
       let creq : CreateRequest = {
         'throttle' : creq_thr,
       };
+
+      // let creq : CreateRequest = {
+      //   'throttle' : {
+      //     'init' : {'ledger' : ledgerCanisterId},
+      //     'variables' : {
+      //         'interval_sec' : {'fixed' : 2n}, 
+      //         'max_amount' : {'fixed' : 100n}
+      //       },
+      //   },
+      // };
     //   public type CreateNodeResp<A> = {
     //     #ok : NodeShared<A>;
     //     #err : Text;
@@ -301,10 +340,68 @@ describe('Basic', () => {
     //   }),
     // });
       let cnr_ret : CreateNodeResp = await  node.icrc55_create_node(req, creq);// : async Node.CreateNodeResp<Tex.Shared> 
-
+      
+      await passTime(3);
+      
+      let source_principal:Principal = jo.getPrincipal();
+      let source_principal_sub:[] | [Uint8Array | number[]] = [];
       console.log("cnr_ret: ", cnr_ret);
+      if ('ok' in cnr_ret) {
+        const aux = cnr_ret.ok;
+        console.log("sources:",aux.sources[0]);
+        if ('ic' in aux.sources[0]) {
+          const aux2 = aux.sources[0].ic;
+          source_principal = aux2.account.owner;
+          source_principal_sub = aux2.account.subaccount
+          console.log("account principal:",aux2.account.owner.toString());
+          console.log("sub-account:",aux2.account.subaccount.toString());
+          console.log("jo principal:",jo.getPrincipal().toString());
+        }
+      }
+
+      const resb = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+      console.log("before source:",resb);
+
+      //load some tokens in the source address:
+      const result = await ledger.icrc1_transfer({
+        to: {owner: source_principal, subaccount:source_principal_sub},
+        from_subaccount: [],
+        amount: 3_0000_0000n,
+        fee: [],
+        memo: [],
+        created_at_time: [],
+      });
+
+      await passTime(3);
+      
+      const resa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+      console.log("after source:",resa);
+
+      // 100060000000
+      // 99760000000
+      
+      console.log("ledger pid:",ledgerCanisterId.toString() );
+      console.log("nodecanisterid pid:",nodeCanisterId.toString());
+      console.log("userCanisterId:",userCanisterId.toString());
+      console.log("jo pId:",jo.getPrincipal().toString());
+      console.log("bob pId:",bob.getPrincipal().toString());
       // await passTime(1);
       // const result = await user.start();
+      //node.start();
+      await passTime(2);
+
+      await passTime(100);
+      // Check balance of BOB is increasing every 2 seconds<------------------
+      // const result = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+      // let i = 0n;
+      // for (; i < 10; i++) {
+        const result_source = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+        console.log("source:",result_source);
+        const result_bob = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+        console.log("bob:",result_bob);
+        //await passTime(4);
+      // }
+      //expect(toState(result)).toBe("100000000")
       // await passTime(3);
       // const result2 = await user.get_info();
       // expect(toState(result2.last_indexed_tx)).toBe("2");

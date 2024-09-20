@@ -12,6 +12,7 @@ import ICRC55 "../src/ICRC55";
 import Node "../src/node";
 import Nat8 "mo:base/Nat8";
 import Array "mo:base/Array";
+import Debug "mo:base/Debug";
 
 actor class({ledgerId: Principal}) = self {
 
@@ -78,26 +79,32 @@ actor class({ledgerId: Principal}) = self {
     // No need to handle errors when sending, the transactions will be retried until they are successful
     ignore Timer.recurringTimer<system>(
         #seconds(2),
-        func() : async () {
-            let now = Nat64.fromNat(Int.abs(Time.now()));
+        func() : async () {Debug.print("l10");
+            let now = Nat64.fromNat(Int.abs(Time.now()));Debug.print("l101");
             label vloop for ((vid, vec) in nodes.entries()) {
-
+Debug.print("l102");
                 if (not nodes.hasDestination(vec, 0)) continue vloop;
-
+Debug.print("l103");
                 let ?source = nodes.getSource(vec, 0) else continue vloop;
+     // Debug.print("l104, source:"#debug_show(source));          
                 let bal = source.balance();
-
+Debug.print("l105");
                 let fee = source.fee();
+                
+                Debug.print("source.endpoint:"#debug_show(source.endpoint));
+                Debug.print("bal:"#debug_show(bal));
+                Debug.print("fee:"#debug_show(fee));
                 if (bal <= fee * 100) continue vloop;
-
+Debug.print("l106");
                 switch (vec.custom) {
                     case (#throttle(th)) {
-                        if (now > th.internals.wait_until_ts) {
+                        Debug.print("l1");
+                        if (now > th.internals.wait_until_ts) {Debug.print("l12");
                             switch (th.variables.interval_sec) {
-                                case (#fixed(fixed)) {
+                                case (#fixed(fixed)) {Debug.print("l14");
                                     th.internals.wait_until_ts := now + fixed * 1_000_000_000;
                                 };
-                                case (#rnd({ min; max })) {
+                                case (#rnd({ min; max })) {Debug.print("l15");
                                     let dur : Nat64 = if (min >= max) 0 else rng.next() % (max - min);
                                     th.internals.wait_until_ts := now + (min + dur) * 1_000_000_000;
                                 };
@@ -107,12 +114,13 @@ actor class({ledgerId: Principal}) = self {
                                 case (#fixed(fixed)) fixed;
                                 case (#rnd({ min; max })) if (min >= max) 0 else min + rng.next() % (max - min);
                             };
-
+                            Debug.print("l141");
                             var amount = Nat.min(bal, Nat64.toNat(max_amount));
+                            Debug.print("l142");
                             if (bal - amount : Nat <= fee * 100) amount := bal; // Don't leave dust
-
+                            Debug.print("l143");
                             source.send(#destination({ port = 0 }), amount);
-
+                            Debug.print("l144:"#debug_show(amount));   
                         };
                     };
                 };
