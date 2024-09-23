@@ -165,9 +165,10 @@ Debug.print("l106");
     // https://github.com/dfinity/motoko/issues/4384
     // Sending tokens before starting the canister for the first time wont get processed
     public shared ({ caller }) func start() {
-        assert (Principal.isController(caller));
-        dvf.start<system>(Principal.fromActor(self));
-        nodes.start<system>(Principal.fromActor(self));
+        Debug.print("Start1");
+        assert (Principal.isController(caller));Debug.print("Start2");
+        dvf.start<system>(Principal.fromActor(self));Debug.print("Start3");
+        nodes.start<system>(Principal.fromActor(self));Debug.print("Start4");
     };
 
 

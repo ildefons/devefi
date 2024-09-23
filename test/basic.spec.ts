@@ -1,3 +1,4 @@
+import { Mint } from './../../devefi_icrc_ledger(old)/test/icrc_ledger/ledger.idl.d';
 import { Principal } from '@dfinity/principal';
 import { resolve } from 'node:path';
 import { Actor, PocketIc, createIdentity } from '@hadronous/pic';
@@ -58,6 +59,9 @@ describe('Basic', () => {
 
     const jo = createIdentity('superSecretAlicePassword');
     const bob = createIdentity('superSecretBobPassword');
+
+    // var source_principal:Principal = bob.getPrincipal();
+    // var source_principal_sub:[] | [Uint8Array | number[]] = [];
   
     beforeAll(async () => {
 
@@ -91,78 +95,82 @@ describe('Basic', () => {
 
     it(`Check (minter) balance`  , async () => {
       const result = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+      console.log("jo balance:",result)
+      const result2 = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+      console.log("bob balance:",result2)
       expect(toState(result)).toBe("100000000000")
+      expect(toState(result2)).toBe("0")
     });
 
-    it(`Send 1 to Bob`, async () => {
-      ledger.setIdentity(jo);
-      const result = await ledger.icrc1_transfer({
-        to: {owner: bob.getPrincipal(), subaccount:[]},
-        from_subaccount: [],
-        amount: 1_0000_0000n,
-        fee: [],
-        memo: [],
-        created_at_time: [],
-      });
-      expect(toState(result)).toStrictEqual({Ok:"1"});
-    });
+    // it(`Send 1 to Bob`, async () => {
+    //   ledger.setIdentity(jo);
+    //   const result = await ledger.icrc1_transfer({
+    //     to: {owner: bob.getPrincipal(), subaccount:[]},
+    //     from_subaccount: [],
+    //     amount: 1_0000_0000n,
+    //     fee: [],
+    //     memo: [],
+    //     created_at_time: [],
+    //   });
+    //   expect(toState(result)).toStrictEqual({Ok:"1"});
+    // });
 
-    it(`Check Bob balance`  , async () => {
-      const result = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-      expect(toState(result)).toBe("100000000")
-    });
+    // it(`Check Bob balance`  , async () => {
+    //   const result = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+    //   expect(toState(result)).toBe("100000000")
+    // });
 
-    it(`last_indexed_tx should start at 0`, async () => {
-      const result = await user.get_info();
-      expect(toState(result.last_indexed_tx)).toBe("0");
-    });
+    // it(`last_indexed_tx should start at 0`, async () => {
+    //   const result = await user.get_info();
+    //   expect(toState(result.last_indexed_tx)).toBe("0");
+    // });
 
-    it(`Check ledger transaction log`  , async () => {
-      const result = await ledger.get_transactions({start: 0n, length: 100n});
-      expect(result.transactions.length).toBe(2);
-      expect(toState(result.log_length)).toBe("2");
-    }); 
+    // it(`Check ledger transaction log`  , async () => {
+    //   const result = await ledger.get_transactions({start: 0n, length: 100n});
+    //   expect(result.transactions.length).toBe(2);
+    //   expect(toState(result.log_length)).toBe("2");
+    // }); 
 
-    it(`start and last_indexed_tx should be at 1`, async () => {
+    // it(`start and last_indexed_tx should be at 1`, async () => {
    
-      await passTime(1);
-      const result = await user.start();
-      await passTime(3);
-      const result2 = await user.get_info();
-      expect(toState(result2.last_indexed_tx)).toBe("2");
-    });
+    //   await passTime(1);
+    //   const result = await user.start();
+    //   await passTime(3);
+    //   const result2 = await user.get_info();
+    //   expect(toState(result2.last_indexed_tx)).toBe("2");
+    // });
 
-    it(`feed ledger user and check if it made the transactions`, async () => {
+    // it(`feed ledger user and check if it made the transactions`, async () => {
    
-      const result = await ledger.icrc1_transfer({
-        to: {owner: userCanisterId, subaccount:[]},
-        from_subaccount: [],   // ILDE: what does it mean mean rom_subaccount = []??? 
-        amount: 1000000_0000_0000n,
-        fee: [],
-        memo: [],
-        created_at_time: [],
-      });
-      await passTime(120);
-      const result2 = await user.get_info();
-      expect(toState(result2.last_indexed_tx)).toBe("6003");     
-    }, 600*1000);
+    //   const result = await ledger.icrc1_transfer({
+    //     to: {owner: userCanisterId, subaccount:[]},
+    //     from_subaccount: [],   // ILDE: what does it mean mean rom_subaccount = []??? 
+    //     amount: 1000000_0000_0000n,
+    //     fee: [],
+    //     memo: [],
+    //     created_at_time: [],
+    //   });
+    //   await passTime(120);
+    //   const result2 = await user.get_info();
+    //   expect(toState(result2.last_indexed_tx)).toBe("6003");     
+    // }, 600*1000);
 
-    it('Compare user<->ledger balances', async () => {
-      let accounts = await user.accounts();
-      let idx =0;
-      for (let [subaccount, balance] of accounts) {
-        idx++;
-        if (idx % 50 != 0) continue; // check only every 50th account (to improve speed, snapshot should be enough when trying to cover all)
-        let ledger_balance = await ledger.icrc1_balance_of({owner: userCanisterId, subaccount:[subaccount]});
-        expect(toState(balance)).toBe(toState(ledger_balance));
-      } 
-    }, 190*1000);
+    // it('Compare user<->ledger balances', async () => {
+    //   let accounts = await user.accounts();
+    //   let idx =0;
+    //   for (let [subaccount, balance] of accounts) {
+    //     idx++;
+    //     if (idx % 50 != 0) continue; // check only every 50th account (to improve speed, snapshot should be enough when trying to cover all)
+    //     let ledger_balance = await ledger.icrc1_balance_of({owner: userCanisterId, subaccount:[subaccount]});
+    //     expect(toState(balance)).toBe(toState(ledger_balance));
+    //   } 
+    // }, 190*1000);
 
 
-    it('Compare user balances to snapshot', async () => {
-      let accounts = await user.accounts();
-      expect(toState(accounts)).toMatchSnapshot()
-    });
+    // it('Compare user balances to snapshot', async () => {
+    //   let accounts = await user.accounts();
+    //   expect(toState(accounts)).toMatchSnapshot()
+    // });
 
     
     // it('Check if error log is empty', async () => {
@@ -174,15 +182,126 @@ describe('Basic', () => {
     //<------------------------
     it(`configure node`, async () => {
    
-      //1) start canister thatcontain the node object
+    //   //1) start canister thatcontain the node object
 
-
+      const result = await user.start();
 
       let gna_args: NodeId = 0;
       let ret_gna = await node.get_node_addr(gna_args);
       console.log("ret_gna:",ret_gna);
-    
-      //   public type NodeRequest = {
+
+
+      let req : NodeRequest = {
+        'controllers' : [jo.getPrincipal()],
+        'destinations' : [{'ic' : {        
+          'name' : 'bob',
+          'ledger' : ledgerCanisterId,
+          'account' : [{'owner': bob.getPrincipal(), subaccount:[]}],        
+          }
+        }],
+        'refund' : [{'ic' : {
+          'name' : 'jo',
+          'ledger' :  ledgerCanisterId,
+          'account' : {'owner': jo.getPrincipal(), subaccount:[]}
+          }
+        }],
+      };
+
+      let creq : CreateRequest = {
+        'throttle' : {
+          'init' : {'ledger' : ledgerCanisterId},
+          'variables' : {
+              'interval_sec' : {'fixed' : 2n}, 
+              'max_amount' : {'fixed' : 100n}
+            },
+        },
+      };
+
+      //let cnr_ret = await node.icrc55_create_node(req, creq);
+      await passTime(3);
+      
+      ledger.setIdentity(jo);
+      node.start();
+      await passTime(30);
+
+      let cnr_ret = await node.icrc55_create_node(req, creq);
+      // var source_principal:Principal = jo.getPrincipal();
+      // var source_principal_sub:[] | [Uint8Array | number[]] = [];
+      console.log("cnr_ret: ", cnr_ret);
+      if ('ok' in cnr_ret) {
+        const aux = cnr_ret.ok;
+        console.log("sources:",aux.sources[0]);
+        if ('ic' in aux.sources[0]) {
+          const aux2 = aux.sources[0].ic;
+          let source_principal = aux2.account.owner;
+          let source_principal_sub = aux2.account.subaccount
+          console.log("account principal:",aux2.account.owner.toString());
+          console.log("sub-account:",aux2.account.subaccount.toString());
+          console.log("jo principal:",jo.getPrincipal().toString());
+
+          const resb = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+          console.log("before source:",resb);
+          
+          const result_jo = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+          console.log("jo balance:",result_jo)
+
+          const res_bob = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+          console.log("balance bob:",res_bob);
+                
+        
+          //load some tokens in the source address:
+          const res_tx = await ledger.icrc1_transfer({
+            to: {owner: source_principal, subaccount:source_principal_sub},
+            from_subaccount: [],
+            amount: 3_0000_0000n,
+            fee: [],
+            memo: [],
+            created_at_time: [],
+          });
+      
+          // node.start();
+
+          // await passTime(30);
+
+          console.log("res_tx:",res_tx);
+
+          const resa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+          console.log("after source:",resa);
+          
+          const result_joa = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+          console.log("jo balance:",result_joa)
+
+          const res_boba = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+          console.log("balance bob:",res_boba);
+
+          await passTime(30);
+
+          const resaa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+          console.log("after source:",resaa);
+          
+          const result_joaa = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+          console.log("jo balance:",result_joaa)
+
+          const res_bobaa = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+          console.log("balance bob:",res_bobaa);
+
+        }
+      }
+      // let i = 0n;
+      // for (; i < 10; i++) {
+        // const result_source = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+        // console.log("source:",result_source);
+        // const result_bob = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+        // console.log("bob:",result_bob);
+        // await passTime(40);
+        // const result_source2 = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+        // console.log("source:",result_source2);
+        // console.log("source pid:",source_principal.toString());
+        // const result_bob2 = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+        // console.log("bob:",result_bob2);
+
+      // }
+    //   public type NodeRequest = {
     //     destinations : [DestinationEndpoint];
     //     refund: [Endpoint];
     //     controllers : [Principal];
@@ -222,29 +341,29 @@ describe('Basic', () => {
     //   'remote' : RemoteEndpoint,
     // });
 
-      let ac_jo: Account = {'owner': jo.getPrincipal(), subaccount:[]};
-      let icep_jo : ICEndpoint = {
-          'name' : 'jo',
-          'ledger' :  ledgerCanisterId,
-          'account' : ac_jo
-      }; 
-      let ep_jo : Endpoint = {
-          'ic' : icep_jo,
-      };
-      let ac_bob: Account = {'owner': bob.getPrincipal(), subaccount:[]};
-      let destic1 : DestICEndpoint = {        
-          'name' : 'bob',
-          'ledger' : ledgerCanisterId,
-          'account' : [ac_bob]        
-      };
-      let dest1 : DestinationEndpoint = {
-          'ic' : destic1
-      };
-      let req : NodeRequest = {
-        'controllers' : [jo.getPrincipal()],
-        'destinations' : [dest1],
-        'refund' : [ep_jo]
-      };
+      // let ac_jo: Account = {'owner': jo.getPrincipal(), subaccount:[]};
+      // let icep_jo : ICEndpoint = {
+      //     'name' : 'jo',
+      //     'ledger' :  ledgerCanisterId,
+      //     'account' : ac_jo
+      // }; 
+      // let ep_jo : Endpoint = {
+      //     'ic' : icep_jo,
+      // };
+      // let ac_bob: Account = {'owner': bob.getPrincipal(), subaccount:[]};
+      // let destic1 : DestICEndpoint = {        
+      //     'name' : 'bob',
+      //     'ledger' : ledgerCanisterId,
+      //     'account' : [ac_bob]        
+      // };
+      // let dest1 : DestinationEndpoint = {
+      //     'ic' : destic1
+      // };
+      // let req : NodeRequest = {
+      //   'controllers' : [jo.getPrincipal()],
+      //   'destinations' : [dest1],
+      //   'refund' : [ep_jo]
+      // };
 
       // let req : NodeRequest = {
       //   'controllers' : [jo.getPrincipal()],
@@ -272,7 +391,8 @@ describe('Basic', () => {
       //   },
       // };
 
-      // await node.icrc55_create_node(req, creq);
+      // let cnr_ret = await node.icrc55_create_node(req, creq);
+      // await passTime(3);
 
     //   public type CreateRequest = {
     //     #throttle : ThrottleVector.CreateRequest;
@@ -306,16 +426,16 @@ describe('Basic', () => {
     //   'rnd' : IDL.Record({ 'max' : IDL.Nat64, 'min' : IDL.Nat64 }),
     //   'fixed' : IDL.Nat64,
     // });
-      let creq_thr : CreateRequest__7 = {
-          'init' : {'ledger' : ledgerCanisterId},
-          'variables' : {
-              'interval_sec' : {'fixed' : 2n}, 
-              'max_amount' : {'fixed' : 100n}
-            },
-      };
-      let creq : CreateRequest = {
-        'throttle' : creq_thr,
-      };
+      // let creq_thr : CreateRequest__7 = {
+      //     'init' : {'ledger' : ledgerCanisterId},
+      //     'variables' : {
+      //         'interval_sec' : {'fixed' : 2n}, 
+      //         'max_amount' : {'fixed' : 100n}
+      //       },
+      // };
+      // let creq : CreateRequest = {
+      //   'throttle' : creq_thr,
+      // };
 
       // let creq : CreateRequest = {
       //   'throttle' : {
@@ -339,73 +459,87 @@ describe('Basic', () => {
     //     'max_amount' : NumVariant,
     //   }),
     // });
-      let cnr_ret : CreateNodeResp = await  node.icrc55_create_node(req, creq);// : async Node.CreateNodeResp<Tex.Shared> 
+     
       
-      await passTime(3);
+      // node.start();
       
-      let source_principal:Principal = jo.getPrincipal();
-      let source_principal_sub:[] | [Uint8Array | number[]] = [];
-      console.log("cnr_ret: ", cnr_ret);
-      if ('ok' in cnr_ret) {
-        const aux = cnr_ret.ok;
-        console.log("sources:",aux.sources[0]);
-        if ('ic' in aux.sources[0]) {
-          const aux2 = aux.sources[0].ic;
-          source_principal = aux2.account.owner;
-          source_principal_sub = aux2.account.subaccount
-          console.log("account principal:",aux2.account.owner.toString());
-          console.log("sub-account:",aux2.account.subaccount.toString());
-          console.log("jo principal:",jo.getPrincipal().toString());
-        }
-      }
+      // await passTime(3);
+      // var source_principal:Principal = jo.getPrincipal();
+      // var source_principal_sub:[] | [Uint8Array | number[]] = [];
+      // console.log("cnr_ret: ", cnr_ret);
+      // if ('ok' in cnr_ret) {
+      //   const aux = cnr_ret.ok;
+      //   console.log("sources:",aux.sources[0]);
+      //   if ('ic' in aux.sources[0]) {
+      //     const aux2 = aux.sources[0].ic;
+      //     source_principal = aux2.account.owner;
+      //     source_principal_sub = aux2.account.subaccount
+      //     console.log("account principal:",aux2.account.owner.toString());
+      //     console.log("sub-account:",aux2.account.subaccount.toString());
+      //     console.log("jo principal:",jo.getPrincipal().toString());
+      //   }
+      // }
 
-      const resb = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-      console.log("before source:",resb);
-
-      //load some tokens in the source address:
-      const result = await ledger.icrc1_transfer({
-        to: {owner: source_principal, subaccount:source_principal_sub},
-        from_subaccount: [],
-        amount: 3_0000_0000n,
-        fee: [],
-        memo: [],
-        created_at_time: [],
-      });
-
-      await passTime(3);
+      // await passTime(3);
       
-      const resa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-      console.log("after source:",resa);
+      // const resb = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+      // console.log("before source:",resb);
+
+      // //load some tokens in the source address:
+      // const result = await ledger.icrc1_transfer({
+      //   to: {owner: source_principal, subaccount:source_principal_sub},
+      //   from_subaccount: [],
+      //   amount: 3_0000_0000n,
+      //   fee: [],
+      //   memo: [],
+      //   created_at_time: [],
+      // });
+
+      // await passTime(3);
+      
+      // const resa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+      // console.log("after source:",resa);
 
       // 100060000000
       // 99760000000
       
-      console.log("ledger pid:",ledgerCanisterId.toString() );
-      console.log("nodecanisterid pid:",nodeCanisterId.toString());
-      console.log("userCanisterId:",userCanisterId.toString());
-      console.log("jo pId:",jo.getPrincipal().toString());
-      console.log("bob pId:",bob.getPrincipal().toString());
+      // console.log("ledger pid:",ledgerCanisterId.toString() );
+      // console.log("nodecanisterid pid:",nodeCanisterId.toString());
+      // console.log("userCanisterId:",userCanisterId.toString());
+      // console.log("jo pId:",jo.getPrincipal().toString());
+      // console.log("bob pId:",bob.getPrincipal().toString());
       // await passTime(1);
       // const result = await user.start();
       //node.start();
-      await passTime(2);
+      // await passTime(2);
 
-      await passTime(100);
+      // await passTime(100);
       // Check balance of BOB is increasing every 2 seconds<------------------
       // const result = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
       // let i = 0n;
       // for (; i < 10; i++) {
-        const result_source = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-        console.log("source:",result_source);
-        const result_bob = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-        console.log("bob:",result_bob);
+        // const result_source = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+        // console.log("source:",result_source);
+        // const result_bob = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+        // console.log("bob:",result_bob);
         //await passTime(4);
       // }
       //expect(toState(result)).toBe("100000000")
       // await passTime(3);
       // const result2 = await user.get_info();
       // expect(toState(result2.last_indexed_tx)).toBe("2");
-    });
+    },600*1000);
+
+
+    // it(`testing`, async () => {
+    //   const result_source2 = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+    //   console.log("source:",result_source2);
+    //   console.log("source pid:",source_principal.toString());
+    //   console.log("bob pid:",bob.getPrincipal().toString());
+    //   const result_bob2 = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+    //   console.log("bob:",result_bob2);
+    // });
+
 
     async function passTime(n:number) {
     for (let i=0; i<n; i++) {

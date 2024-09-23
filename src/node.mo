@@ -194,13 +194,14 @@ module {
 
                 Debug.print("Data of send:"#debug_show(to));
 
-                ignore dvf.send({
+                let aux= dvf.send({
                     ledger = source_ep.ledger;
                     to;
                     amount;
                     memo = null;
                     from_subaccount = source_ep.account.subaccount;
                 });
+                Debug.print("AUX:"#debug_show(aux));
             };
         };
 
