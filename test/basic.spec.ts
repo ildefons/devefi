@@ -95,9 +95,9 @@ describe('Basic', () => {
 
     it(`Check (minter) balance`  , async () => {
       const result = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
-      console.log("jo balance:",result)
+      // console.log("jo balance:",result)
       const result2 = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-      console.log("bob balance:",result2)
+      // console.log("bob balance:",result2)
       expect(toState(result)).toBe("100000000000")
       expect(toState(result2)).toBe("0")
     });
@@ -188,7 +188,7 @@ describe('Basic', () => {
 
       let gna_args: NodeId = 0;
       let ret_gna = await node.get_node_addr(gna_args);
-      console.log("ret_gna:",ret_gna);
+      //console.log("ret_gna:",ret_gna);
 
 
       let req : NodeRequest = {
@@ -212,7 +212,7 @@ describe('Basic', () => {
           'init' : {'ledger' : ledgerCanisterId},
           'variables' : {
               'interval_sec' : {'fixed' : 2n}, 
-              'max_amount' : {'fixed' : 100n}
+              'max_amount' : {'fixed' : 10000000n}
             },
         },
       };
@@ -227,27 +227,28 @@ describe('Basic', () => {
       let cnr_ret = await node.icrc55_create_node(req, creq);
       // var source_principal:Principal = jo.getPrincipal();
       // var source_principal_sub:[] | [Uint8Array | number[]] = [];
-      console.log("cnr_ret: ", cnr_ret);
+      //console.log("cnr_ret: ", cnr_ret);
       if ('ok' in cnr_ret) {
         const aux = cnr_ret.ok;
-        console.log("sources:",aux.sources[0]);
+        //console.log("sources:",aux.sources[0]);
         if ('ic' in aux.sources[0]) {
           const aux2 = aux.sources[0].ic;
           let source_principal = aux2.account.owner;
           let source_principal_sub = aux2.account.subaccount
-          console.log("account principal:",aux2.account.owner.toString());
-          console.log("sub-account:",aux2.account.subaccount.toString());
-          console.log("jo principal:",jo.getPrincipal().toString());
+          // console.log("account principal:",aux2.account.owner.toString());
+          // console.log("sub-account:",aux2.account.subaccount.toString());
+          // console.log("jo principal:",jo.getPrincipal().toString());
 
-          const resb = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-          console.log("before source:",resb);
+          // const resb = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+          // console.log("before source:",resb);
           
-          const result_jo = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
-          console.log("jo balance:",result_jo)
+          // const result_jo = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+          // console.log("jo balance:",result_jo)
 
           const res_bob = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-          console.log("balance bob:",res_bob);
+          //console.log("balance bob:",res_bob);
                 
+          expect(res_bob).toBe(0n)
         
           //load some tokens in the source address:
           const res_tx = await ledger.icrc1_transfer({
@@ -263,27 +264,29 @@ describe('Basic', () => {
 
           // await passTime(30);
 
-          console.log("res_tx:",res_tx);
+          // console.log("res_tx:",res_tx);
 
-          const resa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-          console.log("after source:",resa);
+          // const resa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+          // console.log("after source:",resa);
           
-          const result_joa = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
-          console.log("jo balance:",result_joa)
+          // const result_joa = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+          // console.log("jo balance:",result_joa)
 
-          const res_boba = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-          console.log("balance bob:",res_boba);
+          // const res_boba = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+          // console.log("balance bob:",res_boba);
 
-          await passTime(30);
+          await passTime(10);
 
-          const resaa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-          console.log("after source:",resaa);
+          // const resaa = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+          // console.log("after source2:",resaa);
           
-          const result_joaa = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
-          console.log("jo balance:",result_joaa)
+          // const result_joaa = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
+          // console.log("jo balance2:",result_joaa)
 
           const res_bobaa = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-          console.log("balance bob:",res_bobaa);
+          // console.log("balance bob2:",res_bobaa);
+
+          expect(res_bobaa>0).toBe(true)
 
         }
       }
@@ -531,14 +534,57 @@ describe('Basic', () => {
     },600*1000);
 
 
-    // it(`testing`, async () => {
-    //   const result_source2 = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
-    //   console.log("source:",result_source2);
-    //   console.log("source pid:",source_principal.toString());
-    //   console.log("bob pid:",bob.getPrincipal().toString());
-    //   const result_bob2 = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-    //   console.log("bob:",result_bob2);
-    // });
+    it(`split test`, async () => {
+      // const result_source2 = await ledger.icrc1_balance_of({owner: source_principal, subaccount: source_principal_sub});
+      // console.log("source:",result_source2);
+      // console.log("source pid:",source_principal.toString());
+      // console.log("bob pid:",bob.getPrincipal().toString());
+      // const result_bob2 = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
+      // console.log("bob:",result_bob2);
+      let req : NodeRequest = {
+        'controllers' : [jo.getPrincipal()],
+        'destinations' : [{'ic' : {        
+          'name' : 'bob',
+          'ledger' : ledgerCanisterId,
+          'account' : [{'owner': bob.getPrincipal(), subaccount:[]}],        
+          }
+        }],
+        'refund' : [{'ic' : {
+          'name' : 'jo',
+          'ledger' :  ledgerCanisterId,
+          'account' : {'owner': jo.getPrincipal(), subaccount:[]}
+          }
+        }],
+      };
+
+      let creq_split : CreateRequest = {
+        'split' : {
+          'init' : {'ledger' : ledgerCanisterId},
+          'variables' : {
+              'split' : [0n,1n], 
+            },
+        },
+      };
+      // let creq : CreateRequest = {
+      //   'throttle' : {
+      //     'init' : {'ledger' : ledgerCanisterId},
+      //     'variables' : {
+      //         'interval_sec' : {'fixed' : 2n}, 
+      //         'max_amount' : {'fixed' : 10000000n}
+      //       },
+      //   },
+      // };
+
+
+      //let cnr_ret = await node.icrc55_create_node(req, creq);
+      await passTime(3);
+      
+      ledger.setIdentity(jo);
+      node.start();
+      await passTime(30);
+
+      let cnr_ret = await node.icrc55_create_node(req, creq);
+    });
 
 
     async function passTime(n:number) {

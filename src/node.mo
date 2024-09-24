@@ -192,7 +192,7 @@ module {
 
                 let #ic(source_ep) = endpoint else Debug.trap("Not supported");
 
-                Debug.print("Data of send:"#debug_show(to));
+                //Debug.print("Data of send:"#debug_show(to));
 
                 let aux= dvf.send({
                     ledger = source_ep.ledger;
@@ -201,7 +201,7 @@ module {
                     memo = null;
                     from_subaccount = source_ep.account.subaccount;
                 });
-                Debug.print("AUX:"#debug_show(aux));
+                //Debug.print("AUX:"#debug_show(aux));
             };
         };
 
