@@ -123,6 +123,9 @@ actor class({ledgerId: Principal}) = self {
                             //Debug.print("l144:"#debug_show(amount));   
                         };
                     };
+                    case(_){
+                        //other node vector cases
+                    };
                 };
 
             };

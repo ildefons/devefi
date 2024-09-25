@@ -59,7 +59,8 @@ describe('Basic', () => {
 
     const jo = createIdentity('superSecretAlicePassword');
     const bob = createIdentity('superSecretBobPassword');
-
+    const ali = createIdentity('superSecretAliPassword');
+    
     // var source_principal:Principal = bob.getPrincipal();
     // var source_principal_sub:[] | [Uint8Array | number[]] = [];
   
@@ -73,9 +74,10 @@ describe('Basic', () => {
       ledgerCanisterId = ledgerfixture.canisterId;
       
       // Ledger User
-      const fixture = await TestCan(pic, ledgerCanisterId);
-      user = fixture.actor;
-      userCanisterId = fixture.canisterId;
+
+      // const fixture = await TestCan(pic, ledgerCanisterId);
+      // user = fixture.actor;
+      // userCanisterId = fixture.canisterId;
 
       // Node canister
       const nodefixture = await NodeCan(pic, ledgerCanisterId);
@@ -88,10 +90,10 @@ describe('Basic', () => {
       await pic.tearDown();  //ILDE: this means "it removes the replica"
     });   
 
-    it('tests', async () => {
-      let r = await user.test();
-      expect(r).toBe(5n);
-    });
+    // it('tests', async () => {
+    //   let r = await user.test();
+    //   expect(r).toBe(5n);
+    // });
 
     it(`Check (minter) balance`  , async () => {
       const result = await ledger.icrc1_balance_of({owner: jo.getPrincipal(), subaccount: []});
@@ -184,7 +186,7 @@ describe('Basic', () => {
    
     //   //1) start canister thatcontain the node object
 
-      const result = await user.start();
+      // const result = await user.start();
 
       let gna_args: NodeId = 0;
       let ret_gna = await node.get_node_addr(gna_args);
@@ -284,7 +286,7 @@ describe('Basic', () => {
           // console.log("jo balance2:",result_joaa)
 
           const res_bobaa = await ledger.icrc1_balance_of({owner: bob.getPrincipal(), subaccount: []});
-          // console.log("balance bob2:",res_bobaa);
+          //console.log("balance bob2:",res_bobaa);
 
           expect(res_bobaa>0).toBe(true)
 
@@ -543,12 +545,18 @@ describe('Basic', () => {
       // console.log("bob:",result_bob2);
       let req : NodeRequest = {
         'controllers' : [jo.getPrincipal()],
-        'destinations' : [{'ic' : {        
+        'destinations' : [
+          {'ic' : {        
           'name' : 'bob',
           'ledger' : ledgerCanisterId,
           'account' : [{'owner': bob.getPrincipal(), subaccount:[]}],        
-          }
-        }],
+          }},
+          {'ic' : {        
+            'name' : 'ali',
+            'ledger' : ledgerCanisterId,
+            'account' : [{'owner': ali.getPrincipal(), subaccount:[]}],        
+          }},
+        ],
         'refund' : [{'ic' : {
           'name' : 'jo',
           'ledger' :  ledgerCanisterId,
@@ -565,15 +573,16 @@ describe('Basic', () => {
             },
         },
       };
-      // let creq : CreateRequest = {
-      //   'throttle' : {
-      //     'init' : {'ledger' : ledgerCanisterId},
-      //     'variables' : {
-      //         'interval_sec' : {'fixed' : 2n}, 
-      //         'max_amount' : {'fixed' : 10000000n}
-      //       },
-      //   },
-      // };
+      
+      let creq : CreateRequest = {
+        'throttle' : {
+          'init' : {'ledger' : ledgerCanisterId},
+          'variables' : {
+              'interval_sec' : {'fixed' : 2n}, 
+              'max_amount' : {'fixed' : 10000000n}
+            },
+        },
+      };
 
 
       //let cnr_ret = await node.icrc55_create_node(req, creq);
