@@ -13,8 +13,14 @@ import Node "../src/node";
 import Nat8 "mo:base/Nat8";
 import Array "mo:base/Array";
 import Debug "mo:base/Debug";
+import Iter "mo:base/Iter";
 
 actor class({ledgerId: Principal}) = self {
+
+    func mysum(rs: [Nat]) : Nat {
+      let sum = Array.foldLeft<Nat, Nat>(rs, 0, func(sumSoFar, x) = sumSoFar + x);
+      sum;
+    };
 
     // Throttle vector
     // It will send X amount of tokens every Y seconds
@@ -121,6 +127,27 @@ actor class({ledgerId: Principal}) = self {
                             //Debug.print("l143");
                             source.send(#destination({ port = 0 }), amount);
                             //Debug.print("l144:"#debug_show(amount));   
+                        };
+                    };
+                    case(#split(th)){
+                        Debug.print("l1:"#debug_show(th.variables.split));
+                        let totalSplit = mysum(th.variables.split);
+                        let newSplit =  Array.mapFilter<Nat, Nat>( 
+                                            th.variables.split,
+                                            func x = if (x == 0) { ?0 } else {?(bal*x/totalSplit)});
+                        
+                        Debug.print("l1 new split:"#debug_show(newSplit));
+                        Debug.print("bal:"#debug_show(bal));
+                         //Debug.print("l142");
+                        for (i in Iter.range(0,newSplit.size()-1)) {
+                            var amount = newSplit[i]; // Don't leave dust
+                            if (i == newSplit.size()-1) {
+                                let bal = source.balance();
+                                amount := bal;
+                            };
+                            Debug.print("l143");
+                            source.send(#destination({ port = i }), amount);
+                            Debug.print("l144:"#debug_show(amount));   
                         };
                     };
                     case(_){
