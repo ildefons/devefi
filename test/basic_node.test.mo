@@ -130,14 +130,14 @@ actor class({ledgerId: Principal}) = self {
                         };
                     };
                     case(#split(th)){
-                        Debug.print("l1:"#debug_show(th.variables.split));
+                        //Debug.print("l1:"#debug_show(th.variables.split));
                         let totalSplit = mysum(th.variables.split);
                         let newSplit =  Array.mapFilter<Nat, Nat>( 
                                             th.variables.split,
                                             func x = if (x == 0) { ?0 } else {?(bal*x/totalSplit)});
                         
-                        Debug.print("l1 new split:"#debug_show(newSplit));
-                        Debug.print("bal:"#debug_show(bal));
+                        //Debug.print("l1 new split:"#debug_show(newSplit));
+                        //Debug.print("bal:"#debug_show(bal));
                          //Debug.print("l142");
                         for (i in Iter.range(0,newSplit.size()-1)) {
                             var amount = newSplit[i]; // Don't leave dust
@@ -145,9 +145,9 @@ actor class({ledgerId: Principal}) = self {
                                 let bal = source.balance();
                                 amount := bal;
                             };
-                            Debug.print("l143");
+                            //Debug.print("l143");
                             source.send(#destination({ port = i }), amount);
-                            Debug.print("l144:"#debug_show(amount));   
+                            //Debug.print("l144:"#debug_show(amount));   
                         };
                     };
                     case(_){
